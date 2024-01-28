@@ -84,10 +84,10 @@ class Player:
             self.hand.remove(max(lower_responses))
             return highest_of_low
 
-def two_player_simulator(rounds,prints=False):
+def all_games_2p(tricks,prints=False):
 
-    my_list = np.arange(0,2*rounds)
-    combinations = list(itertools.combinations(my_list,rounds)) # Find all possible combinations
+    my_list = np.arange(0,2*tricks)
+    combinations = list(itertools.combinations(my_list,tricks)) # Find all possible combinations
     iteration = []
     for i in combinations: # Split the combinations into two sets, one for each player
         iteration.append(([[j for j in i],list(set(my_list)-set([j for j in i]))]))
@@ -103,7 +103,7 @@ def two_player_simulator(rounds,prints=False):
 
     # Iterate through each possible game, and record wins, draws and losses for Player1
     for iter in iteration:
-        game = Game(tricks=rounds,players=[player1,player2])
+        game = Game(tricks=tricks,players=[player1,player2])
         result = game.play(iter)
 
         if result[0] > result[1]:
@@ -114,7 +114,7 @@ def two_player_simulator(rounds,prints=False):
             draws += 1
 
     if prints == True:
-        print('Number of Cards per Player:',rounds)
+        print('Number of Cards per Player:',tricks)
         print('Total Games:',len(iteration))
         print('Wins:',wins,'('+str(round(wins/len(iteration)*100,2))+'%)')
         print('Draws:',draws,'('+str(round(draws/len(iteration)*100,2))+'%)')
@@ -122,17 +122,17 @@ def two_player_simulator(rounds,prints=False):
 
     return wins,draws,losses,len(iteration)
 
-def four_player_simulator(rounds,prints=False):
+def all_games_4p(tricks,prints=False):
 
-    my_list = np.arange(0,4*rounds)
-    combinations = list(itertools.combinations(my_list,rounds)) # Find all possible combinations
+    my_list = np.arange(0,4*tricks)
+    combinations = list(itertools.combinations(my_list,tricks)) # Find all possible combinations
     iteration = []
     for i in combinations: # Split the combinations into four sets, one for each player
         my_list1 = list(set(my_list)-set([j for j in i]))
-        combinations1 = list(itertools.combinations(my_list1,rounds))
+        combinations1 = list(itertools.combinations(my_list1,tricks))
         for i1 in combinations1:
             my_list2 = list(set(my_list1)-set([j for j in i1]))
-            combinations2 = list(itertools.combinations(my_list2,rounds))
+            combinations2 = list(itertools.combinations(my_list2,tricks))
             for i2 in combinations2:
                 iteration.append(([[j for j in i],[j for j in i1],[j for j in i2],list(set(my_list2)-set([j for j in i2]))]))
 
@@ -150,7 +150,7 @@ def four_player_simulator(rounds,prints=False):
 
     # Iterate through each possible game, and record the wins per player
     for iter in iteration:
-        game = Game(tricks=rounds,players=[player1,player2,player3,player4])
+        game = Game(tricks=tricks,players=[player1,player2,player3,player4])
         result = game.play(iter)
 
         if result[0] == min(result):
@@ -163,7 +163,7 @@ def four_player_simulator(rounds,prints=False):
             player4_wins += 1
 
     if prints == True:
-        print('Number of Cards per Player:',rounds)
+        print('Number of Cards per Player:',tricks)
         print('Total Games:',len(iteration))
         print('Player 1 Wins:',player1_wins,'('+str(round(player1_wins/len(iteration)*100,2))+'%)')
         print('Player 2 Wins:',player2_wins,'('+str(round(player2_wins/len(iteration)*100,2))+'%)')
@@ -171,3 +171,60 @@ def four_player_simulator(rounds,prints=False):
         print('Player 4 Wins:',player4_wins,'('+str(round(player4_wins/len(iteration)*100,2))+'%)')
 
     return player1_wins,player2_wins,player3_wins,player4_wins,len(iteration)
+
+def two_player_simulator(tricks,iterations):
+
+    # Initialise players
+    player1 = Player(1)
+    player2 = Player(2)
+
+    # Initialise counters
+    wins = 0
+    losses = 0
+    draws = 0
+
+    # Iterate through each possible game, and record wins, draws and losses for Player1
+    for i in range(iterations):
+
+        game = Game(tricks=tricks,players=[player1,player2])
+        result = game.play()
+
+        if result[0] > result[1]:
+            losses += 1
+        elif result[0] < result[1]:
+            wins += 1
+        else:
+            draws += 1
+
+    return wins/iterations,draws/iterations,losses/iterations
+
+def four_player_simulator(tricks,iterations):
+
+    # Initialise players
+    player1 = Player(1)
+    player2 = Player(2)
+    player3 = Player(3)
+    player4 = Player(4)
+
+    # Initialise counters
+    p1_wins = 0
+    p2_wins = 0
+    p3_wins = 0
+    p4_wins = 0
+
+    # Iterate through each possible game, and record wins, draws and losses for Player1
+    for i in range(iterations):
+
+        game = Game(tricks=tricks,players=[player1,player2,player3,player4])
+        result = game.play()
+
+        if result[0] == min(result):
+            p1_wins += 1
+        if result[1] == min(result):
+            p2_wins += 1
+        if result[2] == min(result):
+            p3_wins += 1
+        if result[3] == min(result):
+            p4_wins += 1
+
+    return p1_wins/iterations,p2_wins/iterations,p3_wins/iterations,p4_wins/iterations
