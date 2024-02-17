@@ -35,7 +35,7 @@ class Game:
         # Play rounds
         while self.tricks > 0:
             plays = []
-            plays.append(self.players[self.start].play_lowest()) # First player plays card
+            plays.append(self.players[self.start].play_first()) # First player plays card
             for i in range(self.num_players - 1): # Every player plays a card
                 if i != self.num_players - 2: # Respond normally if not last player
                     plays.append(self.players[(i + 1 + self.start) % self.num_players].respond(max(plays)))
@@ -49,14 +49,24 @@ class Game:
         
 class Player:
 
-    def __init__(self,number):
+    def __init__(self,number,strategy='default'):
 
         self.number = number
         self.hand = []
+        self.strategy = strategy
 
     def set_hand(self,hand):
 
         self.hand = hand
+
+    def play_first(self):
+
+        if (self.strategy == 'default') or (self.strategy == 'lowest'):
+            return self.play_lowest()
+        elif self.strategy == 'random':
+            return self.play_random()
+        elif self.strategy == 'highest':
+            return self.play_highest()
     
     # Used by first player in a round to play the lowest card in their hand
     def play_lowest(self):
@@ -67,8 +77,35 @@ class Player:
         self.hand.remove(min(self.hand))
         return lowest
     
-    # Used by non-first players in a round to play a card depending on the highest card played and turn order
+    # Play highest card in hand
+    def play_highest(self):
+
+        if len(self.hand) == 0:
+            return
+        highest = max(self.hand)
+        self.hand.remove(max(self.hand))
+        return highest
+    
+    def play_random(self):
+
+        choice = random.choice(self.hand)
+        self.hand.remove(choice)
+        return choice
+    
+    # Choose a response according to initialised strategy
     def respond(self,highest,last=False):
+
+        if self.strategy == 'default':
+            return self.default_response(highest,last=last)
+        elif self.strategy == 'random':
+            return self.play_random()
+        elif self.strategy == 'lowest':
+            return self.play_lowest()
+        elif self.strategy == 'highest':
+            return self.play_highest()
+
+    # Used by non-first players in a round to play a card depending on the highest card played and turn order
+    def default_response(self,highest,last):
 
         lower_responses = [x for x in self.hand if x < highest] # Generate list of numbers lower than highest card
         if (len(lower_responses) == 0) & (last == False): # Play lowest card in hand
